@@ -1,87 +1,58 @@
+import datetime
+import json
+import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-app = Flask(__name__)
-CORS(app)
+from database.models import db
+from database.models.Score import Score
 
-@app.route('/currentWeekData', methods = ['GET'])
-def currentWeekData():
-    return jsonify([
-        [
-            {
-                'Date': '20221003',
-                'Kate': 3,
-                'Will': 4
-            },
-            {
-                'Date': '20221004',
-                'Kate': 3,
-                'Will': 2
-            },
-            {
-                'Date': '20221005',
-                'Kate': 2,
-                'Will': 4
-            },
-            {
-                'Date': '20221006',
-                'Kate': 5,
-                'Will': 4
-            },
-            {
-                'Date': '20221007',
-                'Kate': 4,
-                'Will': 4
-            },
-           {
-                'Date': '20221008',
-                'Kate': 3,
-                'Will': 3
-            },
-            {
-                'Date': '20221009',
-                'Kate': 4,
-                'Will': 3
-            }
-        ],
-        [
-            {
-                'Date': '20221010',
-                'Kate': 5,
-                'Will': 4
-            },
-            {
-                'Date': '20221011',
-                'Kate': 3,
-                'Will': 3
-            },
-            {
-                'Date': '20221012',
-                'Kate': 2,
-                'Will': 3
-            },
-            {
-                'Date': '20221013',
-                'Kate': 4,
-                'Will': 4
-            },
-            {
-                'Date': '20221014',
-                'Kate': 4,
-                'Will': 3
-            },
-            {
-                'Date': '20221015',
-                'Kate': None,
-                'Will': None
-            },
-            {
-                'Date': '20221016',
-                'Kate': None,
-                'Will': None
-            }
-        ]
-    ])
+DIR = os.path.abspath(os.path.dirname(__file__))
+DB_DIR = f'{DIR}/database'
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_DIR}/wordle.db'
+CORS(app)
+db.init_app(app)
+
+@app.route('/getTestData', methods = ['GET'])
+def get_test_data():
+    text = open('test_data.json', 'r')
+    return json.loads(text.read())
+
+@app.route('/getData', methods = ['GET'])
+def get_data():
+    all_scores = []
+    for score in Score.query.all():
+        all_scores.append({
+            "Date": score.date,
+            "Kate": score.kate_score,
+            "Will": score.will_score
+        })
+    all_scores = sorted(all_scores, key = lambda x: x['Date'])
+    all_scores_dict = {str(x['Date']): x for x in all_scores}
+    earliest_date = all_scores[0]['Date']
+    earliest_date_weekday = earliest_date.weekday()
+    start_date = earliest_date - datetime.timedelta(days = earliest_date_weekday)
+    all_weeks = []
+    while start_date <= datetime.date.today():
+        single_week = []
+        for _ in range(7):
+            str_start_date = str(start_date)
+            if str_start_date in all_scores_dict:
+                data = all_scores_dict[str_start_date]
+                kate_score = data['Kate']
+                will_score = data['Will']
+            else:
+                future = start_date > datetime.date.today()
+                kate_score = will_score = None if future else 8
+            single_week.append({
+                'Date': str_start_date,
+                'Kate': kate_score,
+                'Will': will_score
+            })
+            start_date = start_date + datetime.timedelta(days = 1)
+        all_weeks.append(single_week)
+    return jsonify(all_weeks)
 
 if __name__ == '__main__':
     app.run()
