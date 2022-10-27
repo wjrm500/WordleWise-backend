@@ -1,7 +1,8 @@
 import datetime
+from http import HTTPStatus
 import json
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS
 
 from database.models import db
@@ -53,6 +54,32 @@ def get_data():
             start_date = start_date + datetime.timedelta(days = 1)
         all_weeks.append(single_week)
     return jsonify(all_weeks)
+
+@app.route('/addScore', methods = ['POST'])
+def add_score():
+    data = request.json
+    score = db.session.query(Score).filter_by(date = data['date']).first()
+    if score is not None:
+        if data['player'] == 'Will':
+            score.will_score = data['score']
+        elif data['player'] == 'Kate':
+            score.kate_score = data['score']
+    else:
+        if data['player'] == 'Will':
+            score = Score(
+                date = datetime.datetime.strptime(data['date'], "%Y-%m-%d"),
+                will_score = data['score'],
+                kate_score = None
+            )
+        elif data['player'] == 'Kate':
+            score = Score(
+                date = datetime.datetime.strptime(data['date'], "%Y-%m-%d"),
+                will_score = None,
+                kate_score = data['score']
+            )
+        db.session.add(score)
+    db.session.commit()
+    return make_response({}, HTTPStatus.OK)
 
 if __name__ == '__main__':
     app.run()
