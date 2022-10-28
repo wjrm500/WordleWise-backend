@@ -21,7 +21,6 @@ def login():
     data = request.json
     provided_username = data['username']
     provided_password = data['password']
-    print(provided_username)
     user = db.session.query(User).filter_by(username = provided_username).first()
     if user is not None:
         hash_to_match = user.password_hash
