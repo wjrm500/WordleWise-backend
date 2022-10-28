@@ -29,11 +29,6 @@ def login():
         return jsonify({'success': False, 'error': 'Password incorrect'})
     return jsonify({'success': False, 'error': 'User does not exist'})
 
-@app.route('/getTestData', methods = ['GET'])
-def get_test_data():
-    text = open('test_data.json', 'r')
-    return json.loads(text.read())
-
 @app.route('/getData', methods = ['GET'])
 def get_data():
     all_days = []
@@ -81,13 +76,13 @@ def add_score():
             day.kate_score = data['score']
     else:
         if data['user'] == 'Will':
-            score = Day(
+            day = Day(
                 date = datetime.datetime.strptime(data['date'], "%Y-%m-%d"),
                 will_score = data['score'],
                 kate_score = None
             )
         elif data['user'] == 'Kate':
-            score = Day(
+            day = Day(
                 date = datetime.datetime.strptime(data['date'], "%Y-%m-%d"),
                 will_score = None,
                 kate_score = data['score']
