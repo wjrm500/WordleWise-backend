@@ -31,7 +31,7 @@ def get_data():
 def add_score():
     try:
         data = request.json
-        database.add_score(data)
+        database.add_score(data['date'], data['score'], data['user'])
         upload_database()
         resp = jsonify('')
         resp.headers.add('Access-Control-Allow-Origin', '*')

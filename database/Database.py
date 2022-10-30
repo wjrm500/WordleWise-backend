@@ -58,27 +58,27 @@ class Database:
             all_weeks.append(single_week)
         return all_weeks
     
-    def add_score(self, data):
-        day = self.session.query(Day).filter_by(date = data['date']).first()
+    def add_score(self, date: str, score: int, user: str):
+        day = self.session.query(Day).filter_by(date = date).first()
         if day is not None:
-            if data['user'] == 'wjrm500':
-                day.will_score = data['score']
-            elif data['user'] == 'kjem500':
-                day.kate_score = data['score']
+            if user == 'wjrm500':
+                day.will_score = score
+            elif user == 'kjem500':
+                day.kate_score = score
         else:
-            input_date = datetime.datetime.strptime(data['date'], "%Y-%m-%d").date()
+            input_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
             opponent_score = None if input_date == datetime.date.today() else 8
-            if data['user'] == 'wjrm500':
+            if user == 'wjrm500':
                 day = Day(
                     date = input_date,
-                    will_score = data['score'],
+                    will_score = score,
                     kate_score = opponent_score
                 )
-            elif data['user'] == 'kjem500':
+            elif user == 'kjem500':
                 day = Day(
                     date = input_date,
                     will_score = opponent_score,
-                    kate_score = data['score']
+                    kate_score = score
                 )
             self.session.add(day)
         self.session.commit()
