@@ -8,9 +8,9 @@ from database.models.Day import Day
 from database.models.User import User
 
 class Database:
-    def __init__(self) -> None:
+    def __init__(self, database_url: str) -> None:
         self.created_at = datetime.datetime.now()
-        self.database_url = 'sqlite:///wordle.db'
+        self.database_url = database_url
         self.engine = create_engine(self.database_url, echo = False)
         Base.metadata.create_all(self.engine, checkfirst = True)
         self.session = scoped_session(sessionmaker(bind = self.engine))

@@ -2,7 +2,8 @@ from http import HTTPStatus
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from database.Database import Database
-from download_database import download
+from database.aws.download_database import download_database
+from database.aws.upload_database import upload_database
 
 app = Flask(__name__)
 CORS(app)
@@ -31,14 +32,15 @@ def add_score():
     try:
         data = request.json
         database.add_score(data)
+        upload_database()
         resp = jsonify('')
         resp.headers.add('Access-Control-Allow-Origin', '*')
         return resp
     except Exception as e:
         return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
-download(filename = 'wordle.db')
+download_database()
 global database
-database = Database()
+database = Database(database_url = 'sqlite:///wordle.db')
 if __name__ == '__main__':
     app.run()
