@@ -23,18 +23,26 @@ class Database:
                 return
             raise Exception('Password incorrect')
         raise Exception('User does not exist')
+    
+    def truncate_day_table(self):
+        self.session.execute('''DELETE FROM day''')
+        self.session.commit()
         
     def get_data(self):
         all_days = []
+        all_days_dict = {}
         for day in self.session.query(Day).all():
             all_days.append({
                 "Date": day.date,
                 "Kate": day.kate_score,
                 "Will": day.will_score
             })
-        all_days = sorted(all_days, key = lambda x: x['Date'])
-        all_days_dict = {str(x['Date']): x for x in all_days}
-        earliest_date = all_days[0]['Date']
+        if len(all_days) > 0:
+            all_days = sorted(all_days, key = lambda x: x['Date'])
+            all_days_dict = {str(x['Date']): x for x in all_days}
+            earliest_date = all_days[0]['Date']
+        else:
+            earliest_date = datetime.date.today()
         earliest_date_weekday = earliest_date.weekday()
         start_date = earliest_date - datetime.timedelta(days = earliest_date_weekday)
         all_weeks = []
