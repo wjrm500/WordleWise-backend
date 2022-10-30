@@ -19,6 +19,9 @@ class Database:
     def today(self) -> datetime.date:
         return datetime.datetime.now(pytz.timezone('Asia/Singapore')).date()
     
+    def get_day_from_date(self, date: str) -> Day:
+        return self.session.query(Day).filter_by(date = date).first()
+    
     def login(self, username: str, password: str) -> None:
         user = self.session.query(User).filter_by(username = username).first()
         if user is not None:
@@ -30,6 +33,11 @@ class Database:
     
     def truncate_day_table(self) -> None:
         self.session.execute('''DELETE FROM day''')
+        self.session.commit()
+    
+    def delete_day(self, date: str) -> None:
+        day = self.get_day_from_date(date)
+        self.session.delete(day)
         self.session.commit()
         
     def get_data(self) -> List:
@@ -71,7 +79,7 @@ class Database:
         return all_weeks
     
     def add_score(self, date: str, score: int, user: str) -> None:
-        day = self.session.query(Day).filter_by(date = date).first()
+        day = self.get_day_from_date()
         if day is not None:
             if user == 'wjrm500':
                 day.will_score = score
