@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+from typing import List
 import pytz
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -10,13 +11,15 @@ from database.models.User import User
 
 class Database:
     def __init__(self, database_url: str) -> None:
-        self.created_at = datetime.datetime.now()
         self.database_url = database_url
         self.engine = create_engine(self.database_url, echo = False)
         Base.metadata.create_all(self.engine, checkfirst = True)
         self.session = scoped_session(sessionmaker(bind = self.engine))
     
-    def login(self, username: str, password: str):
+    def today(self) -> datetime.date:
+        return datetime.datetime.now(pytz.timezone('Asia/Singapore')).date()
+    
+    def login(self, username: str, password: str) -> None:
         user = self.session.query(User).filter_by(username = username).first()
         if user is not None:
             hash_to_match = user.password_hash
@@ -25,12 +28,11 @@ class Database:
             raise Exception('Password incorrect')
         raise Exception('User does not exist')
     
-    def truncate_day_table(self):
+    def truncate_day_table(self) -> None:
         self.session.execute('''DELETE FROM day''')
         self.session.commit()
         
-    def get_data(self):
-        today = datetime.datetime.now(pytz.timezone('Asia/Singapore')).date()
+    def get_data(self) -> List:
         all_days = []
         all_days_dict = {}
         for day in self.session.query(Day).all():
@@ -44,11 +46,11 @@ class Database:
             all_days_dict = {str(x['Date']): x for x in all_days}
             earliest_date = all_days[0]['Date']
         else:
-            earliest_date = today
+            earliest_date = self.today()
         earliest_date_weekday = earliest_date.weekday()
         start_date = earliest_date - datetime.timedelta(days = earliest_date_weekday)
         all_weeks = []
-        while start_date <= today:
+        while start_date <= self.today():
             single_week = []
             for _ in range(7):
                 str_start_date = str(start_date)
@@ -57,7 +59,7 @@ class Database:
                     kate_score = data['Kate']
                     will_score = data['Will']
                 else:
-                    future = start_date >= today
+                    future = start_date >= self.today()
                     kate_score = will_score = None if future else 8
                 single_week.append({
                     'Date': str_start_date,
@@ -68,7 +70,7 @@ class Database:
             all_weeks.append(single_week)
         return all_weeks
     
-    def add_score(self, date: str, score: int, user: str):
+    def add_score(self, date: str, score: int, user: str) -> None:
         day = self.session.query(Day).filter_by(date = date).first()
         if day is not None:
             if user == 'wjrm500':
@@ -77,7 +79,7 @@ class Database:
                 day.kate_score = score
         else:
             input_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-            opponent_score = None if input_date == datetime.date.today() else 8
+            opponent_score = None if input_date == self.today() else 8
             if user == 'wjrm500':
                 day = Day(
                     date = input_date,
