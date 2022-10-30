@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Date, Integer
-from database.models import db
+from database.models import Base
 
-class Day(db.Model):
+class Day(Base):
     __tablename__ = 'day'
     id = Column(Integer, primary_key = True, autoincrement = True)
     date = Column(Date)
