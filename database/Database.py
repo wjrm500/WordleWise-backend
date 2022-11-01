@@ -79,7 +79,7 @@ class Database:
         return all_weeks
     
     def add_score(self, date: str, score: int, user: str) -> None:
-        day = self.get_day_from_date()
+        day = self.get_day_from_date(date)
         if day is not None:
             if user == 'wjrm500':
                 day.will_score = score
