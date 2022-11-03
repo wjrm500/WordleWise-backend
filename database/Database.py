@@ -41,6 +41,7 @@ class Database:
         self.session.commit()
         
     def get_data(self) -> List:
+        today = self.today()
         all_days = []
         all_days_dict = {}
         for day in self.session.query(Day).all():
@@ -54,20 +55,20 @@ class Database:
             all_days_dict = {str(x['Date']): x for x in all_days}
             earliest_date = all_days[0]['Date']
         else:
-            earliest_date = self.today()
+            earliest_date = today
         earliest_date_weekday = earliest_date.weekday()
         start_date = earliest_date - datetime.timedelta(days = earliest_date_weekday)
         all_weeks = []
-        while start_date <= self.today():
+        while start_date <= today:
             single_week = []
             for _ in range(7):
                 str_start_date = str(start_date)
                 if str_start_date in all_days_dict:
                     data = all_days_dict[str_start_date]
-                    kate_score = data['Kate']
-                    will_score = data['Will']
+                    kate_score = data['Kate'] or 8
+                    will_score = data['Will'] or 8
                 else:
-                    future = start_date >= self.today()
+                    future = start_date >= today
                     kate_score = will_score = None if future else 8
                 single_week.append({
                     'Date': str_start_date,
