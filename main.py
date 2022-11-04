@@ -1,6 +1,8 @@
-from http import HTTPStatus
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from http import HTTPStatus
+import os
+
 from database.Database import Database
 from database.aws.download_database import download_database
 from database.aws.upload_database import upload_database
@@ -41,6 +43,7 @@ def add_score():
 
 download_database()
 global database
-database = Database(database_url = 'sqlite:///wordle.db')
+database_filename = os.environ.get('AWS_S3_OBJECT_NAME')
+database = Database(database_url = f'sqlite:///{database_filename}')
 if __name__ == '__main__':
     app.run()
