@@ -1,3 +1,4 @@
+import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, JWTManager
@@ -20,7 +21,7 @@ def login():
     password = data['password']
     try:
         database.login(username, password)
-        access_token = create_access_token(identity = username)
+        access_token = create_access_token(identity = username, expires_delta = datetime.timedelta(minutes = 30))
         return jsonify({'success': True, 'error': None, 'access_token': access_token})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e), 'access_token': None})
