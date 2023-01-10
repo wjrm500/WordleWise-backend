@@ -15,9 +15,17 @@ class Database:
         self.engine = create_engine(self.database_url, echo = False)
         Base.metadata.create_all(self.engine, checkfirst = True)
         self.session = scoped_session(sessionmaker(bind = self.engine))
+        self.timezone = None
+    
+    def set_timezone(self, timezone) -> None:
+        if timezone not in pytz.all_timezones:
+            raise Exception('Invalid timezone')
+        self.timezone = timezone
     
     def today(self) -> datetime.date:
-        return datetime.datetime.now(pytz.timezone('Asia/Singapore')).date()
+        if self.timezone is None:
+            raise Exception('No timezone has been set')
+        return datetime.datetime.now(pytz.timezone(self.timezone)).date()
     
     def get_day_from_date(self, date: str) -> Day:
         return self.session.query(Day).filter_by(date = date).first()

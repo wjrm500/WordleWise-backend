@@ -26,10 +26,11 @@ def login():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e), 'access_token': None})
 
-@app.route('/getData', methods = ['GET'])
+@app.route('/getData', methods = ['POST'])
 @jwt_required()
 def get_data():
     try:
+        database.set_timezone(request.json['timezone'])
         all_weeks = database.get_data()
         return jsonify(all_weeks)
     except Exception as e:
@@ -40,6 +41,7 @@ def get_data():
 def add_score():
     try:
         data = request.json
+        database.set_timezone(data['timezone'])
         database.add_score(data['date'], data['score'], data['user'])
         upload_database()
         resp = jsonify('')
