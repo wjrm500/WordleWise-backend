@@ -50,6 +50,18 @@ def add_score():
     except Exception as e:
         return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
+@app.route('/executeSql', methods = ['POST'])
+@jwt_required()
+def execute_sql():
+    try:
+        database.execute(request.json['sql'])
+        upload_database()
+        resp = jsonify('')
+        resp.headers.add('Access-Control-Allow-Origin', '*')
+        return resp
+    except Exception as e:
+        return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+
 download_database()
 global database
 database_filename = os.environ.get('AWS_S3_OBJECT_NAME')

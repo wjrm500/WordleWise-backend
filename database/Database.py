@@ -17,6 +17,10 @@ class Database:
         self.session = scoped_session(sessionmaker(bind = self.engine))
         self.timezone = None
     
+    def execute(self, sql) -> None:
+        self.session.execute(sql)
+        self.session.commit()
+    
     def set_timezone(self, timezone) -> None:
         if timezone not in pytz.all_timezones:
             raise Exception('Invalid timezone')
@@ -38,15 +42,6 @@ class Database:
                 return
             raise Exception('Password incorrect')
         raise Exception('User does not exist')
-    
-    def truncate_day_table(self) -> None:
-        self.session.execute('''DELETE FROM day''')
-        self.session.commit()
-    
-    def delete_day(self, date: str) -> None:
-        day = self.get_day_from_date(date)
-        self.session.delete(day)
-        self.session.commit()
         
     def get_data(self) -> List:
         today = self.today()
