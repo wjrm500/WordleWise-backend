@@ -14,17 +14,20 @@ app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 JWTManager(app)
 CORS(app)
 
+serialise_model = lambda model: {col.name: getattr(model, col.name) for col in model.__table__.columns}
+
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
     username = data['username']
     password = data['password']
     try:
-        database.login(username, password)
+        user = database.login(username, password)
+        print(user)
         access_token = create_access_token(identity = username, expires_delta = datetime.timedelta(minutes = 30))
-        return jsonify({'success': True, 'error': None, 'access_token': access_token})
+        return jsonify({'success': True, 'error': None, 'access_token': access_token, 'user': serialise_model(user)})
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e), 'access_token': None})
+        return jsonify({'success': False, 'error': str(e), 'access_token': None, 'user': None})
 
 @app.route('/getData', methods = ['POST'])
 @jwt_required()

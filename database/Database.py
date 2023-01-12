@@ -34,12 +34,12 @@ class Database:
     def get_day_from_date(self, date: str) -> Day:
         return self.session.query(Day).filter_by(date = date).first()
     
-    def login(self, username: str, password: str) -> None:
+    def login(self, username: str, password: str) -> User:
         user = self.session.query(User).filter_by(username = username).first()
         if user is not None:
             hash_to_match = user.password_hash
             if hashlib.md5(password.encode()).hexdigest() == hash_to_match:
-                return
+                return user
             raise Exception('Password incorrect')
         raise Exception('User does not exist')
         
