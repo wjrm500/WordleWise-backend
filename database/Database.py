@@ -65,15 +65,13 @@ class Database:
         while start_date <= today:
             single_week = []
             for _ in range(7):
-                future = start_date >= today
-                default_score = None if future else 8
                 str_start_date = str(start_date)
                 if str_start_date in all_days_dict:
                     data = all_days_dict[str_start_date]
-                    kate_score = data['Kate'] or default_score
-                    will_score = data['Will'] or default_score
+                    kate_score = data['Kate']
+                    will_score = data['Will']
                 else:
-                    kate_score = will_score = default_score
+                    kate_score = will_score = None
                 single_week.append({
                     'Date': str_start_date,
                     'Kate': kate_score,
