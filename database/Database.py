@@ -90,17 +90,16 @@ class Database:
                 day.kate_score = score
         else:
             input_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-            opponent_score = None if input_date == self.today() else 8
             if user == 'wjrm500':
                 day = Day(
                     date = input_date,
                     will_score = score,
-                    kate_score = opponent_score
+                    kate_score = None
                 )
             elif user == 'kjem500':
                 day = Day(
                     date = input_date,
-                    will_score = opponent_score,
+                    will_score = None,
                     kate_score = score
                 )
             self.session.add(day)
