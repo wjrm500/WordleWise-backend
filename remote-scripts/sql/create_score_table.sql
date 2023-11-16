@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS score (
+    id INTEGER PRIMARY KEY,
+    date DATE NOT NULL,
+    user_id INTEGER NOT NULL,
+    score INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES user(id)
+)
