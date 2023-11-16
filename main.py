@@ -23,7 +23,6 @@ def login():
     password = data['password']
     try:
         user = database.login(username, password)
-        print(user)
         access_token = create_access_token(identity = username, expires_delta = datetime.timedelta(minutes = 30))
         return jsonify({'success': True, 'error': None, 'access_token': access_token, 'user': serialise_model(user)})
     except Exception as e:
@@ -37,6 +36,7 @@ def get_data():
         all_weeks = database.get_data()
         return jsonify(all_weeks)
     except Exception as e:
+        print(e)
         return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 @app.route('/addScore', methods = ['POST'])
@@ -45,12 +45,13 @@ def add_score():
     try:
         data = request.json
         database.set_timezone(data['timezone'])
-        database.add_score(data['date'], data['score'], data['user'])
+        database.add_score(data['date'], data['user_id'], data['score'])
         upload_database()
         resp = jsonify('')
         resp.headers.add('Access-Control-Allow-Origin', '*')
         return resp
     except Exception as e:
+        print(e)
         return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
 @app.route('/executeSql', methods = ['POST'])

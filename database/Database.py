@@ -3,10 +3,10 @@ import hashlib
 from typing import List
 import pytz
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm import Session, sessionmaker, scoped_session
 
 from database.models import Base
-from database.models.Day import Day
+from database.models.Score import Score
 from database.models.User import User
 
 class Database:
@@ -14,7 +14,7 @@ class Database:
         self.database_url = database_url
         self.engine = create_engine(self.database_url, echo = False)
         Base.metadata.create_all(self.engine, checkfirst = True)
-        self.session = scoped_session(sessionmaker(bind = self.engine))
+        self.session: Session = scoped_session(sessionmaker(bind = self.engine))
         self.timezone = None
     
     def execute(self, sql) -> None:
@@ -31,9 +31,6 @@ class Database:
             raise Exception('No timezone has been set')
         return datetime.datetime.now(pytz.timezone(self.timezone)).date()
     
-    def get_day_from_date(self, date: str) -> Day:
-        return self.session.query(Day).filter_by(date = date).first()
-    
     def login(self, username: str, password: str) -> User:
         user = self.session.query(User).filter_by(username = username).first()
         if user is not None:
@@ -45,18 +42,19 @@ class Database:
         
     def get_data(self) -> List:
         today = self.today()
-        all_days = []
         all_days_dict = {}
-        for day in self.session.query(Day).all():
-            all_days.append({
-                "Date": day.date,
-                "Kate": day.kate_score,
-                "Will": day.will_score
-            })
-        if len(all_days) > 0:
-            all_days = sorted(all_days, key = lambda x: x['Date'])
-            all_days_dict = {str(x['Date']): x for x in all_days}
-            earliest_date = all_days[0]['Date']
+        for score in self.session.query(Score).all():
+            score: Score
+            key = str(score.date)
+            if key not in all_days_dict:
+                all_days_dict[key] = {"Date": score.date}
+            if score.user_id == 1:
+                all_days_dict[key]["Will"] = score.score
+            elif score.user_id == 2:
+                all_days_dict[key]["Kate"] = score.score
+        if len(all_days_dict) > 0:
+            all_days_dict = dict(sorted(all_days_dict.items()))
+            earliest_date = all_days_dict[min(all_days_dict)]["Date"]
         else:
             earliest_date = today
         earliest_date_weekday = earliest_date.weekday()
@@ -68,8 +66,8 @@ class Database:
                 str_start_date = str(start_date)
                 if str_start_date in all_days_dict:
                     data = all_days_dict[str_start_date]
-                    kate_score = data['Kate']
-                    will_score = data['Will']
+                    kate_score = data.get('Kate')
+                    will_score = data.get('Will')
                 else:
                     kate_score = will_score = None
                 single_week.append({
@@ -81,26 +79,12 @@ class Database:
             all_weeks.append(single_week)
         return all_weeks
     
-    def add_score(self, date: str, score: int, user: str) -> None:
-        day = self.get_day_from_date(date)
-        if day is not None:
-            if user == 'wjrm500':
-                day.will_score = score
-            elif user == 'kjem500':
-                day.kate_score = score
-        else:
-            input_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-            if user == 'wjrm500':
-                day = Day(
-                    date = input_date,
-                    will_score = score,
-                    kate_score = None
-                )
-            elif user == 'kjem500':
-                day = Day(
-                    date = input_date,
-                    will_score = None,
-                    kate_score = score
-                )
-            self.session.add(day)
+    def add_score(self, date: str, user_id: int, score: int) -> None:
+        self.session.add(
+            Score(
+                date = datetime.datetime.strptime(date, "%Y-%m-%d").date(),
+                user_id = user_id,
+                score = score
+            )
+        )
         self.session.commit()
