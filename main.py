@@ -28,12 +28,12 @@ def login():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e), 'access_token': None, 'user': None})
 
-@app.route('/getData', methods = ['POST'])
+@app.route('/getScores', methods = ['POST'])
 @jwt_required()
-def get_data():
+def get_scores():
     try:
         database.set_timezone(request.json['timezone'])
-        all_weeks = database.get_data()
+        all_weeks = database.get_scores()
         return jsonify(all_weeks)
     except Exception as e:
         print(e)
@@ -50,6 +50,16 @@ def add_score():
         resp = jsonify('')
         resp.headers.add('Access-Control-Allow-Origin', '*')
         return resp
+    except Exception as e:
+        print(e)
+        return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+
+@app.route('/getPlayers', methods=['GET'])
+@jwt_required()
+def get_players():
+    try:
+        players = database.get_players()
+        return jsonify([serialise_model(player) for player in players])
     except Exception as e:
         print(e)
         return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)

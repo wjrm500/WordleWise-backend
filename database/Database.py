@@ -40,7 +40,7 @@ class Database:
             raise Exception('Password incorrect')
         raise Exception('User does not exist')
         
-    def get_data(self) -> List:
+    def get_scores(self) -> List:
         today = self.today()
         all_days_dict = {}
         for score in self.session.query(Score).all():
@@ -88,3 +88,6 @@ class Database:
             )
         )
         self.session.commit()
+
+    def get_players(self) -> List[User]:
+        return self.session.query(User).all()
