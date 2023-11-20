@@ -59,7 +59,7 @@ def add_score():
 def get_players():
     try:
         players = database.get_players()
-        return jsonify([serialise_model(player) for player in players])
+        return jsonify([{"id": player.id, "username": player.username} for player in players])
     except Exception as e:
         print(e)
         return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
