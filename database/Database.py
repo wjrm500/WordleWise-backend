@@ -1,3 +1,4 @@
+from collections import defaultdict
 import datetime
 import hashlib
 from typing import List
@@ -41,43 +42,22 @@ class Database:
         raise Exception('User does not exist')
         
     def get_scores(self) -> List:
-        today = self.today()
-        all_days_dict = {}
+        all_scores_dict = {}
         for score in self.session.query(Score).all():
             score: Score
-            key = str(score.date)
-            if key not in all_days_dict:
-                all_days_dict[key] = {"Date": score.date}
-            if score.user_id == 1:
-                all_days_dict[key]["Will"] = score.score
-            elif score.user_id == 2:
-                all_days_dict[key]["Kate"] = score.score
-        if len(all_days_dict) > 0:
-            all_days_dict = dict(sorted(all_days_dict.items()))
-            earliest_date = all_days_dict[min(all_days_dict)]["Date"]
-        else:
-            earliest_date = today
-        earliest_date_weekday = earliest_date.weekday()
-        start_date = earliest_date - datetime.timedelta(days = earliest_date_weekday)
-        all_weeks = []
-        while start_date <= today:
-            single_week = []
-            for _ in range(7):
-                str_start_date = str(start_date)
-                if str_start_date in all_days_dict:
-                    data = all_days_dict[str_start_date]
-                    kate_score = data.get('Kate')
-                    will_score = data.get('Will')
-                else:
-                    kate_score = will_score = None
-                single_week.append({
-                    'Date': str_start_date,
-                    'Kate': kate_score,
-                    'Will': will_score
-                })
-                start_date = start_date + datetime.timedelta(days = 1)
-            all_weeks.append(single_week)
-        return all_weeks
+            score_date: datetime.date = score.date
+            start_of_week = score_date - datetime.timedelta(days=score_date.weekday())
+            if start_of_week not in all_scores_dict:
+                all_scores_dict[start_of_week] = {
+                    "start_of_week": str(start_of_week),
+                    "data": {
+                        str(start_of_week + datetime.timedelta(days = i)): {} for i in range(7)
+                    }
+                }
+            all_scores_dict[start_of_week]["data"][str(score_date)][score.user.username] = score.score
+        for k in all_scores_dict.keys():
+            all_scores_dict[k]["data"] = dict(sorted(all_scores_dict[k]["data"].items(), key = lambda x: x[0]))
+        return [x[1] for x in sorted(all_scores_dict.items(), key = lambda x: x[0])]
     
     def add_score(self, date: str, user_id: int, score: int) -> None:
         self.session.add(

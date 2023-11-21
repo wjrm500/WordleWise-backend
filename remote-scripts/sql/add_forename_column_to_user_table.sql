@@ -1,0 +1,1 @@
+ALTER TABLE user ADD COLUMN forename VARCHAR(250);
