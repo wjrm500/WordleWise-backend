@@ -42,22 +42,52 @@ class Database:
         raise Exception('User does not exist')
         
     def get_scores(self) -> List:
+        # Get all scores
         all_scores_dict = {}
         for score in self.session.query(Score).all():
             score: Score
             score_date: datetime.date = score.date
-            start_of_week = score_date - datetime.timedelta(days=score_date.weekday())
-            if start_of_week not in all_scores_dict:
-                all_scores_dict[start_of_week] = {
-                    "start_of_week": str(start_of_week),
+            week_start_date = score_date - datetime.timedelta(days=score_date.weekday())
+            if week_start_date not in all_scores_dict:
+                all_scores_dict[week_start_date] = {
+                    "start_of_week": str(week_start_date),
                     "data": {
-                        str(start_of_week + datetime.timedelta(days = i)): {} for i in range(7)
+                        str(week_start_date + datetime.timedelta(days=i)): {} for i in range(7)
                     }
                 }
-            all_scores_dict[start_of_week]["data"][str(score_date)][score.user.username] = score.score
-        for k in all_scores_dict.keys():
-            all_scores_dict[k]["data"] = dict(sorted(all_scores_dict[k]["data"].items(), key = lambda x: x[0]))
-        return [x[1] for x in sorted(all_scores_dict.items(), key = lambda x: x[0])]
+            all_scores_dict[week_start_date]["data"][str(score_date)][score.user.username] = score.score
+        
+        # Fill in missing weeks
+        earliest_date = min(all_scores_dict.keys())
+        while earliest_date <= datetime.date.today() - datetime.timedelta(days=7):
+            if earliest_date not in all_scores_dict:
+                all_scores_dict[earliest_date] = {
+                    "start_of_week": str(earliest_date),
+                    "data": {
+                        str(earliest_date + datetime.timedelta(days=i)): {} for i in range(7)
+                    }
+                }
+            earliest_date += datetime.timedelta(days=7)
+        
+        # Include the current week
+        current_week_start_date = datetime.date.today() - datetime.timedelta(days=datetime.date.today().weekday())
+        if current_week_start_date not in all_scores_dict:
+            all_scores_dict[current_week_start_date] = {
+                "start_of_week": str(current_week_start_date),
+                "data": {
+                    str(current_week_start_date + datetime.timedelta(days=i)): {} for i in range(7)
+                }
+            }
+
+        # Sort the weeks
+        all_scores_dict = dict(sorted(all_scores_dict.items(), key = lambda x: x[0]))
+
+        # Sort the days
+        for week in all_scores_dict.values():
+            week["data"] = dict(sorted(week["data"].items(), key = lambda x: x[0]))
+
+        # Return as a list
+        return list(all_scores_dict.values())
     
     def add_score(self, date: str, user_id: int, score: int) -> None:
         self.session.add(
