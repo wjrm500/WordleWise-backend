@@ -175,6 +175,27 @@ class DatabaseTest(unittest.TestCase):
                 },
             ]
             self.assertEqual(result, expected_result)
+        
+    def test_add_score(self) -> None:
+        # Mocking user and date for the test
+        score_date = "2023-01-01"
+        user_id = 1
+        score_value = 3
+
+        # Call the add_score method
+        self.database.add_score(score_date, user_id, score_value)
+
+        # Assert that session.add was called with the expected score
+        self.database.session.add.assert_called_once()
+
+        # Assert that the score was added with the correct values
+        score: Score = self.database.session.add.call_args[0][0]
+        self.assertEqual(score.date, datetime.date(2023, 1, 1))
+        self.assertEqual(score.user_id, 1)
+        self.assertEqual(score.score, 3)
+
+        # Assert that session.commit was called
+        self.database.session.commit.assert_called_once()
 
 if __name__ == '__main__':
     unittest.main()
