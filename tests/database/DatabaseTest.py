@@ -196,6 +196,17 @@ class DatabaseTest(unittest.TestCase):
 
         # Assert that session.commit was called
         self.database.session.commit.assert_called_once()
+    
+    def test_get_users(self) -> None:
+        # Mocking users for the test
+        mock_users = self.mock_users()
+        self.database.session.query.return_value.all.return_value = mock_users
+
+        # Call the get_users method
+        result = self.database.get_users()
+
+        # Assert that the result is the expected list of users
+        self.assertEqual(result, mock_users)
 
 if __name__ == '__main__':
     unittest.main()
