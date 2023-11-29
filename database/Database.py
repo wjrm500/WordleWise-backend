@@ -99,5 +99,5 @@ class Database:
         )
         self.session.commit()
 
-    def get_players(self) -> List[User]:
+    def get_users(self) -> List[User]:
         return self.session.query(User).all()

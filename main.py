@@ -54,12 +54,12 @@ def add_score():
         print(e)
         return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
-@app.route('/getPlayers', methods=['GET'])
+@app.route('/getUsers', methods=['GET'])
 @jwt_required()
-def get_players():
+def get_users():
     try:
-        players = database.get_players()
-        return jsonify([{"id": player.id, "username": player.username} for player in players])
+        users = database.get_users()
+        return jsonify([{"id": user.id, "username": user.username} for user in users])
     except Exception as e:
         print(e)
         return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
