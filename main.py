@@ -81,4 +81,5 @@ global database
 database_filename = os.environ.get('AWS_S3_OBJECT_NAME')
 database = Database(database_url = f'sqlite:///{database_filename}')
 if __name__ == '__main__':
-    app.run()
+    print("Starting server...")
+    app.run(host="0.0.0.0", port=5000)
