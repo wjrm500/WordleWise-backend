@@ -1,4 +1,5 @@
 import datetime
+import time
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, JWTManager
@@ -15,6 +16,10 @@ JWTManager(app)
 CORS(app)
 
 serialise_model = lambda model: {col.name: getattr(model, col.name) for col in model.__table__.columns}
+
+@app.before_request
+def before_request_func():
+    time.sleep(0)
 
 @app.route('/login', methods=['POST'])
 def login():
