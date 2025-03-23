@@ -19,6 +19,7 @@ The database file is stored in a volume on the server to persist data between co
 
 ## Running the app locally
 The simplest way to run the app locally is using Docker.
+
 1. Ensure you have git, Docker and Docker Compose installed
 2. Clone this repository
 3. Create an `.env` file based on `.env.example` and add a value for the `JWT_SECRET_KEY` parameter. You can generate a key using a command like `python -c "import secrets; print(secrets.token_hex(13))"`
