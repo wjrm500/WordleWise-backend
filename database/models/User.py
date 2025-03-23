@@ -1,7 +1,7 @@
-from typing import List, Type
+from typing import List
 
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, relationship
 
 from database.models import Base
 
@@ -14,4 +14,4 @@ class User(Base):
     admin = Column(Integer)
     
     # Relationship to Score
-    scores: 'List[Score]' = relationship('Score', back_populates='user')
+    scores: Mapped[List['Score']] = relationship('Score', back_populates='user')

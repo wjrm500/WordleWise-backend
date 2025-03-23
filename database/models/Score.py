@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Date, ForeignKey, Integer
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, relationship
 
 from database.models import Base
 from database.models.User import User
@@ -12,4 +12,4 @@ class Score(Base):
     score = Column(Integer)
 
     # Relationship to User
-    user: 'User' = relationship('User', back_populates='scores')
+    user: Mapped['User'] = relationship('User', back_populates='scores')

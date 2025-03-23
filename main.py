@@ -77,7 +77,7 @@ def execute_sql():
     except Exception as e:
         return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
-database = Database(database_url='sqlite:///wordle-prod.db')
+database = Database(database_url='sqlite:///wordlewise.db')
 
 if __name__ == '__main__':
     print("Starting server...")
