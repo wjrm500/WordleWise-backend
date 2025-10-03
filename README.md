@@ -47,12 +47,12 @@ docker push wjrm500/wordlewise-backend:latest
 
 On the remote server...
 
-(D) Pull the image:
+(C) Pull the image:
 ```bash
 docker compose -p wordlewise -f /home/ServerConfig/wordlewise-docker-compose.yml pull
 ```
 
-(E) Restart the container:
+(D) Restart the container:
 ```bash
 docker compose -p wordlewise -f /home/ServerConfig/wordlewise-docker-compose.yml up -d
 ```
