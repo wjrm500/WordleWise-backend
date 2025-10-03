@@ -91,19 +91,6 @@ def get_wordle_answer():
         formatted_date = f"{date_obj.day:02d}-{date_obj.month:02d}-{str(date_obj.year)[2:]}"
         url = f"https://www.rockpapershotgun.com/wordle-hint-and-answer-today-{formatted_date}"
         
-        # Check if feature is disabled
-        try:
-            with open('wordle_answer_findable.txt', 'r') as f:
-                if f.read().strip().lower() == 'false':
-                    return jsonify({
-                        'success': False,
-                        'error': 'Feature is currently disabled due to source format changes'
-                    })
-        except FileNotFoundError:
-            # If file doesn't exist, create it with default 'true'
-            with open('wordle_answer_findable.txt', 'w') as f:
-                f.write('true')
-        
         # Fetch the page content
         response = requests.get(url)
         response.raise_for_status()
@@ -132,23 +119,12 @@ def get_wordle_answer():
                     'playable_url': playable_url
                 })
         
-        # If we got here, the format has likely changed
-        with open('wordle_answer_findable.txt', 'w') as f:
-            f.write('false')
-            
         return jsonify({
             'success': False,
             'error': 'Could not find answer on the page. The format may have changed.'
         })
         
     except Exception as e:
-        # If there's any error, disable the feature for future requests
-        try:
-            with open('wordle_answer_findable.txt', 'w') as f:
-                f.write('false')
-        except:
-            pass
-            
         return jsonify({
             'success': False,
             'error': str(e)
