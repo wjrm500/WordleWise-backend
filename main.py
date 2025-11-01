@@ -1,4 +1,6 @@
 import datetime
+import html
+import json
 import time
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -129,6 +131,76 @@ def get_wordle_answer():
             'success': False,
             'error': str(e)
         })
+
+@app.route('/admin/set-title', methods=['GET', 'POST'])
+def set_title_page():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        title = request.form.get('title', '').strip()
+        expiry_str = request.form.get('expiry')
+        
+        try:
+            user = database.login('wjrm500', password)
+            if not user.admin:
+                return '<h1>Unauthorised</h1><a href="/admin/set-title">Back</a>'
+        except:
+            return '<h1>Wrong password</h1><a href="/admin/set-title">Back</a>'
+        
+        if not title:
+            return '<h1>Title cannot be empty</h1><a href="/admin/set-title">Back</a>'
+        
+        # Escape any HTML to prevent XSS
+        title = html.escape(title)
+        
+        # Parse expiry datetime
+        try:
+            expiry = datetime.datetime.fromisoformat(expiry_str)
+        except:
+            return '<h1>Invalid expiry date</h1><a href="/admin/set-title">Back</a>'
+        
+        with open('custom_title.json', 'w') as f:
+            json.dump({'title': title, 'expiry': expiry.isoformat()}, f)
+        
+        expiry_display = expiry.strftime('%Y-%m-%d %H:%M:%S')
+        return f'''
+            <h1>Done!</h1>
+            <p>Title: {title}</p>
+            <p>Expires: {expiry_display}</p>
+        '''
+    
+    # Default expiry: today at 23:59:59
+    default_expiry = datetime.datetime.now().replace(hour=23, minute=59, second=59, microsecond=0)
+    default_expiry_str = default_expiry.strftime('%Y-%m-%dT%H:%M')
+    
+    return f'''
+    <html>
+    <head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Set Title</title></head>
+    <body>
+    <h1>Set custom page title</h1>
+    <form method="POST">
+    <label>Password for wjrm500:</label><br>
+    <input type="password" name="password" placeholder="Password" required autocomplete="current-password"><br><br>
+    <label>New page title:</label><br>
+    <input type="text" name="title" placeholder="Title" required><br><br>
+    <label>Expires:</label><br>
+    <input type="datetime-local" name="expiry" value="{default_expiry_str}" required><br><br>
+    <button type="submit">Update</button>
+    </form>
+    </body>
+    </html>
+    '''
+
+@app.route('/getTitle', methods=['GET'])
+def get_title():
+    try:
+        with open('custom_title.json', 'r') as f:
+            data = json.load(f)
+        expiry = datetime.datetime.fromisoformat(data['expiry'])
+        if expiry > datetime.datetime.now():
+            return jsonify({'title': data['title']})
+    except:
+        pass
+    return jsonify({'title': 'Welcome to WordleWise'})
 
 database = Database(database_url='sqlite:///wordlewise.db')
 
