@@ -30,7 +30,7 @@ if user:
     print("Password updated.")
 else:
     print(f"User {username} not found. Creating...")
-    user = User(username=username, password_hash=password_hash, forename='Will', admin=1)
+    user = User(username=username, password_hash=password_hash, forename='Will')
     db.session.add(user)
     db.session.commit()
     print("User created.")

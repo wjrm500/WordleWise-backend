@@ -59,12 +59,6 @@ def seed_database():
             # Add Kate to group
             db.join_group(group.id, kate.id)
             print(f"Added Kate to group.")
-            
-            # Make Kate admin too for testing
-            member = db.session.query(GroupMember).filter_by(group_id=group.id, user_id=kate.id).first()
-            if member:
-                member.role = 'admin'
-                db.session.commit()
 
     # 4. Add Scores
     # Generate scores for the last 30 days

@@ -12,7 +12,6 @@ class User(Base):
     username = Column(String(50), unique=True, nullable=False)
     forename = Column(String(50))
     password_hash = Column(String(255), nullable=False)
-    admin = Column(Integer, nullable=False, default=0)  # Site-wide admin
     
     # Relationships
     scores: Mapped[List['Score']] = relationship('Score', back_populates='user')

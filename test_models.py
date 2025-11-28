@@ -31,6 +31,5 @@ assert members[0].name == "Test Group"
 member_details = db.get_group_member_details(group.id)
 print(f"Group has {len(member_details)} members")
 assert len(member_details) == 1
-assert member_details[0][1].role == 'admin'
 
 print("Test complete!")
