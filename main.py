@@ -23,8 +23,15 @@ app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 JWTManager(app)
 CORS(app)
 
-# Initialize database
 database = Database(database_url='sqlite:///wordlewise.db')
+
+def serialise_user(user):
+    return {
+        'id': user.id,
+        'username': user.username,
+        'forename': user.forename,
+        'default_group_id': user.default_group_id
+    }
 
 serialise_model = lambda model: {col.name: getattr(model, col.name) for col in model.__table__.columns}
 
@@ -34,7 +41,6 @@ def before_request_func():
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
-    """Close the database session after each request to return connection to pool."""
     database.session.remove()
 
 @app.route('/login', methods=['POST'])
@@ -45,7 +51,7 @@ def login():
     try:
         user = database.login(username, password)
         access_token = create_access_token(identity=username, expires_delta=datetime.timedelta(minutes=30))
-        return jsonify({'success': True, 'error': None, 'access_token': access_token, 'user': serialise_model(user)})
+        return jsonify({'success': True, 'error': None, 'access_token': access_token, 'user': serialise_user(user)})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e), 'access_token': None, 'user': None})
 
@@ -62,7 +68,7 @@ def register():
     try:
         user = database.register_user(username, password, forename)
         access_token = create_access_token(identity=username, expires_delta=datetime.timedelta(minutes=30))
-        return jsonify({'success': True, 'error': None, 'access_token': access_token, 'user': serialise_model(user)})
+        return jsonify({'success': True, 'error': None, 'access_token': access_token, 'user': serialise_user(user)})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
@@ -84,7 +90,6 @@ def get_scores():
         elif scope == 'personal':
             scope_type = 'personal'
             
-        # Validate group access
         if scope_type == 'group':
             if not group_id:
                 return jsonify({'error': 'Group ID required for group scope'}), 400
@@ -198,10 +203,6 @@ def get_wordle_answer():
             'error': str(e)
         })
 
-# =============================================================================
-# Group Endpoints
-# =============================================================================
-
 def get_current_user():
     username = get_jwt_identity()
     user = database.session.query(User).filter_by(username=username).first()
@@ -237,7 +238,8 @@ def get_groups():
                 "name": group.name,
                 "member_count": member_count,
                 "role": membership.role,
-                "include_historical_data": bool(group.include_historical_data)
+                "include_historical_data": bool(group.include_historical_data),
+                "is_default": user.default_group_id == group.id
             })
         return jsonify(result)
     except Exception as e:
@@ -338,9 +340,7 @@ def delete_group(group_id):
         user = get_current_user()
         require_group_admin(group_id, user)
         
-        group = database.get_group(group_id)
-        database.session.delete(group)
-        database.session.commit()
+        database.delete_group(group_id)
         
         return jsonify({"success": True})
     except Exception as e:
@@ -359,7 +359,6 @@ def join_group():
         if not group:
             return jsonify({"success": False, "error": "Invalid invite code"}), 400
             
-        # Check if already a member
         existing = database.get_membership(group.id, user.id)
         if existing:
             return jsonify({"success": False, "error": "You're already a member of this group"}), 400
@@ -453,6 +452,52 @@ def regenerate_invite_code(group_id):
     except Exception as e:
         if hasattr(e, 'code'):
             return jsonify({'error': str(e)}), e.code
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/user/default-scope', methods=['PUT'])
+@jwt_required()
+def set_default_scope():
+    try:
+        user = get_current_user()
+        data = request.json
+        scope_type = data.get('type', 'personal')
+        
+        if scope_type == 'personal':
+            success = database.set_default_scope(user.id, None)
+        elif scope_type == 'group':
+            group_id = data.get('groupId')
+            if not group_id:
+                return jsonify({"success": False, "error": "Group ID required"}), 400
+            membership = database.get_membership(group_id, user.id)
+            if not membership:
+                return jsonify({"success": False, "error": "You are not a member of this group"}), 403
+            success = database.set_default_scope(user.id, group_id)
+        else:
+            return jsonify({"success": False, "error": "Invalid scope type"}), 400
+        
+        if success:
+            return jsonify({"success": True})
+        else:
+            return jsonify({"success": False, "error": "Failed to update default scope"}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/user/default-scope', methods=['GET'])
+@jwt_required()
+def get_default_scope():
+    try:
+        user = get_current_user()
+        if user.default_group_id:
+            return jsonify({
+                "type": "group",
+                "groupId": user.default_group_id
+            })
+        else:
+            return jsonify({
+                "type": "personal",
+                "groupId": None
+            })
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 

@@ -77,6 +77,9 @@ class Database:
         self.session.add(new_user)
         self.session.commit()
         return new_user
+    
+    def get_user_by_id(self, user_id: int) -> User:
+        return self.session.query(User).filter_by(id=user_id).first()
         
     def get_scores(self, user_id: int, scope_type: str, group_id: int = None) -> List:
         # Determine query based on scope
@@ -245,7 +248,10 @@ class Database:
         
         self.session.delete(member)
         
-        # Check if group empty
+        user = self.get_user_by_id(user_id)
+        if user and user.default_group_id == group_id:
+            user.default_group_id = None
+        
         remaining = self.session.query(GroupMember).filter_by(group_id=group_id).count()
         if remaining == 0:
             self.session.query(Group).filter_by(id=group_id).delete()
@@ -257,7 +263,6 @@ class Database:
         return self.session.query(User).join(GroupMember).filter(GroupMember.group_id == group_id).all()
         
     def get_group_member_details(self, group_id):
-        # Returns (User, GroupMember) tuples to get roles
         return self.session.query(User, GroupMember).join(GroupMember).filter(GroupMember.group_id == group_id).all()
 
     def update_group(self, group_id, **kwargs):
@@ -271,6 +276,10 @@ class Database:
         return False
 
     def remove_member(self, group_id, user_id):
+        user = self.get_user_by_id(user_id)
+        if user and user.default_group_id == group_id:
+            user.default_group_id = None
+        
         self.session.query(GroupMember).filter_by(group_id=group_id, user_id=user_id).delete()
         self.session.commit()
 
@@ -300,3 +309,27 @@ class Database:
         date_obj = datetime.datetime.strptime(date, "%Y-%m-%d").date()
         self.session.query(Score).filter_by(user_id=user_id, date=date_obj).delete()
         self.session.commit()
+
+    def delete_group(self, group_id: int) -> None:
+        self.session.query(User).filter_by(default_group_id=group_id).update(
+            {User.default_group_id: None}
+        )
+        
+        group = self.get_group(group_id)
+        if group:
+            self.session.delete(group)
+            self.session.commit()
+
+    def set_default_scope(self, user_id: int, group_id: int = None) -> bool:
+        user = self.get_user_by_id(user_id)
+        if not user:
+            return False
+        
+        if group_id is not None:
+            membership = self.get_membership(group_id, user_id)
+            if not membership:
+                return False
+        
+        user.default_group_id = group_id
+        self.session.commit()
+        return True
