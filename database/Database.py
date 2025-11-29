@@ -295,3 +295,8 @@ class Database:
 
     def get_membership(self, group_id, user_id):
         return self.session.query(GroupMember).filter_by(group_id=group_id, user_id=user_id).first()
+
+    def delete_score(self, date: str, user_id: int) -> None:
+        date_obj = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+        self.session.query(Score).filter_by(user_id=user_id, date=date_obj).delete()
+        self.session.commit()

@@ -106,8 +106,11 @@ def add_score():
         data = request.json
         database.set_timezone(data['timezone'])
         
-        # Use authenticated user's ID
-        database.add_score(data['date'], user.id, data['score'])
+        score = data.get('score')
+        if score is None:
+            database.delete_score(data['date'], user.id)
+        else:
+            database.add_score(data['date'], user.id, score)
         
         resp = jsonify('')
         resp.headers.add('Access-Control-Allow-Origin', '*')
