@@ -9,9 +9,17 @@ from database.Database import Database
 
 load_dotenv()
 
-def create_app():
+def create_app(test_config=None):
     app = Flask(__name__)
     app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
+    app.config['JWT_COOKIE_CSRF_PROTECT'] = False
+    app.config['JWT_CSRF_CHECK_FORM'] = False
+    app.config['JWT_CSRF_IN_COOKIES'] = False
+    app.config['JWT_TOKEN_LOCATION'] = ['headers']
+    
+    if test_config:
+        app.config.update(test_config)
+        
     JWTManager(app)
     CORS(app)
 

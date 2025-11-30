@@ -36,7 +36,7 @@ def get_scores():
         print(e)
         if hasattr(e, 'code'):
             return jsonify({'error': str(e)}), e.code
-        return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        return jsonify(str(e)), HTTPStatus.INTERNAL_SERVER_ERROR
 
 @scores_bp.route('/addScore', methods=['POST'])
 @jwt_required()
@@ -58,4 +58,4 @@ def add_score():
         return resp
     except Exception as e:
         print(e)
-        return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        return jsonify(str(e)), HTTPStatus.INTERNAL_SERVER_ERROR

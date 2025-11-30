@@ -11,12 +11,13 @@ from database.Database import Database
 @pytest.fixture
 def app():
     """Create and configure a new app instance for each test."""
-    # Setup - create app with test config
-    app = create_app()
-    app.config.update({
+    test_config = {
         "TESTING": True,
         "JWT_SECRET_KEY": "test-secret-key",
-    })
+        "JWT_TOKEN_LOCATION": ["headers"],
+        "JWT_COOKIE_CSRF_PROTECT": False,
+    }
+    app = create_app(test_config)
     
     # Use an in-memory database for tests
     test_db = Database(database_url="sqlite:///:memory:")

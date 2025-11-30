@@ -14,4 +14,4 @@ def execute_sql():
         resp.headers.add('Access-Control-Allow-Origin', '*')
         return resp
     except Exception as e:
-        return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        return jsonify(str(e)), HTTPStatus.INTERNAL_SERVER_ERROR

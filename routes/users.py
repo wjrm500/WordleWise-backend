@@ -29,4 +29,4 @@ def get_users():
         print(e)
         if hasattr(e, 'code'):
             return jsonify({'error': str(e)}), e.code
-        return jsonify(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+        return jsonify(str(e)), HTTPStatus.INTERNAL_SERVER_ERROR
