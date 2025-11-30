@@ -13,4 +13,6 @@ dependencies = [
     "pytz>=2025.1",
     "requests>=2.32.3",
     "sqlalchemy>=2.0.39",
+    "pytest>=8.0.0",
+    "freezegun>=1.2.2",
 ]
