@@ -21,12 +21,18 @@ COPY config/ /app/config/
 COPY database/ /app/database/
 COPY routes/ /app/routes/
 COPY utils/ /app/utils/
+COPY scripts/ /app/scripts/
+COPY entrypoint.sh /app/
 
 # Install the project itself
 RUN uv sync --frozen
 
+# Make entrypoint executable
+RUN chmod +x /app/entrypoint.sh
+
 # Set Python path
 ENV PYTHONPATH="${PYTHONPATH}:/app"
 
-# Run the application
+# Run the application via entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["uv", "run", "main.py"]

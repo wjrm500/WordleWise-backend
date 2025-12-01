@@ -12,6 +12,10 @@ def create_app(test_config=None):
     app = Flask(__name__)
     app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
     app.config['DATABASE_URL'] = os.environ.get('DATABASE_URL', 'sqlite:///wordlewise.db')
+    app.config['FLASK_ENV'] = os.environ.get('FLASK_ENV', 'production')
+    
+    if app.config['FLASK_ENV'] == 'development':
+        app.debug = True
     
     if test_config:
         app.config.update(test_config)
