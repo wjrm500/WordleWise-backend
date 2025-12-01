@@ -14,16 +14,14 @@ def app():
     test_config = {
         "TESTING": True,
         "JWT_SECRET_KEY": "test-secret-key",
-        "JWT_TOKEN_LOCATION": ["headers"],
-        "JWT_COOKIE_CSRF_PROTECT": False,
+        "DATABASE_URL": "sqlite:///:memory:"
     }
     app = create_app(test_config)
     
-    # Use an in-memory database for tests
-    test_db = Database(database_url="sqlite:///:memory:")
-    app.config['database'] = test_db
-
     yield app
+
+    # Cleanup session after test
+    app.config['database'].session.remove()
 
 @pytest.fixture
 def client(app):

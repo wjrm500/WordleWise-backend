@@ -1,5 +1,4 @@
 import os
-import time
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -12,10 +11,7 @@ load_dotenv()
 def create_app(test_config=None):
     app = Flask(__name__)
     app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
-    app.config['JWT_COOKIE_CSRF_PROTECT'] = False
-    app.config['JWT_CSRF_CHECK_FORM'] = False
-    app.config['JWT_CSRF_IN_COOKIES'] = False
-    app.config['JWT_TOKEN_LOCATION'] = ['headers']
+    app.config['DATABASE_URL'] = os.environ.get('DATABASE_URL', 'sqlite:///wordlewise.db')
     
     if test_config:
         app.config.update(test_config)
@@ -23,15 +19,12 @@ def create_app(test_config=None):
     JWTManager(app)
     CORS(app)
 
-    database = Database(database_url='sqlite:///wordlewise.db')
+    database = Database(database_url=app.config['DATABASE_URL'])
 
-    @app.before_request
-    def before_request_func():
-        time.sleep(0)
-
-    @app.teardown_appcontext
-    def shutdown_session(exception=None):
-        database.session.remove()
+    if not test_config or not test_config.get('TESTING'):
+        @app.teardown_appcontext
+        def shutdown_session(exception=None):
+            database.session.remove()
 
     # Register blueprints
     from routes.auth import auth_bp
