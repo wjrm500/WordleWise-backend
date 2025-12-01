@@ -6,24 +6,22 @@ from utils.auth_helpers import get_current_user, require_group_member
 
 scores_bp = Blueprint('scores', __name__)
 
-@scores_bp.route('/getScores', methods=['POST'])
+@scores_bp.route('/scores', methods=['GET'])
 @jwt_required()
 def get_scores():
     database = current_app.config['database']
     try:
         user = get_current_user(database)
-        data = request.json
-        database.set_timezone(data['timezone'])
+        
+        timezone = request.args.get('timezone')
+        if timezone:
+            database.set_timezone(timezone)
 
-        scope = data.get('scope')
-        scope_type = 'personal'
-        group_id = None
-
-        if isinstance(scope, dict):
-            scope_type = scope.get('type', 'personal')
-            group_id = scope.get('groupId')
-        elif scope == 'personal':
-            scope_type = 'personal'
+        scope_type = request.args.get('scope', 'personal')
+        group_id = request.args.get('groupId')
+        
+        if group_id:
+            group_id = int(group_id)
 
         if scope_type == 'group':
             if not group_id:
@@ -38,7 +36,7 @@ def get_scores():
             return jsonify({'error': str(e)}), e.code
         return jsonify(str(e)), HTTPStatus.INTERNAL_SERVER_ERROR
 
-@scores_bp.route('/addScore', methods=['POST'])
+@scores_bp.route('/scores', methods=['POST'])
 @jwt_required()
 def add_score():
     database = current_app.config['database']

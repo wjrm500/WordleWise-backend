@@ -56,14 +56,14 @@ def test_journey_new(client, db):
         # 7. Add scores (on 2023-01-01)
         today = "2023-01-01"
         # Admin score
-        client.post('/addScore', json={
+        client.post('/scores', json={
             'date': today,
             'score': 3,
             'timezone': 'Europe/London'
         }, headers=headers1)
         
         # Member score
-        client.post('/addScore', json={
+        client.post('/scores', json={
             'date': today,
             'score': 5,
             'timezone': 'Europe/London'
@@ -73,11 +73,12 @@ def test_journey_new(client, db):
         # Move time forward slightly if needed, or just check the data
         # We'll check for the week containing 2023-01-01
         
-        req_data = {
-            'scope': {'type': 'group', 'groupId': group_id},
+        query_params = {
+            'scope': 'group',
+            'groupId': group_id,
             'timezone': 'Europe/London'
         }
-        resp = client.post('/getScores', json=req_data, headers=headers1)
+        resp = client.get('/scores', query_string=query_params, headers=headers1)
         assert resp.status_code == 200
         
         # Find the week and day

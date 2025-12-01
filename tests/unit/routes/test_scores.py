@@ -20,7 +20,7 @@ def test_add_score(auth_client, db):
         'timezone': 'Europe/London'
     }
     
-    resp = client.post('/addScore', json=score_data, headers=headers)
+    resp = client.post('/scores', json=score_data, headers=headers)
     assert resp.status_code == 200
     
     # Verify in DB
@@ -43,7 +43,7 @@ def test_delete_score(auth_client, db):
         'score': None,
         'timezone': 'Europe/London'
     }
-    resp = client.post('/addScore', json=score_data, headers=headers)
+    resp = client.post('/scores', json=score_data, headers=headers)
     assert resp.status_code == 200
     
     from database.models.Score import Score
@@ -60,11 +60,11 @@ def test_get_scores_personal(auth_client, db):
         login_resp = client.post('/login', json={'username': 'testuser', 'password': 'password'})
         headers = {'Authorization': f"Bearer {login_resp.json['access_token']}"}
         
-        req_data = {
+        query_params = {
             'scope': 'personal',
             'timezone': 'Europe/London'
         }
-        resp = client.post('/getScores', json=req_data, headers=headers)
+        resp = client.get('/scores', query_string=query_params, headers=headers)
         
         assert resp.status_code == 200
         assert len(resp.json) == 1
@@ -86,11 +86,12 @@ def test_get_scores_group(client, db):
         login_resp = client.post('/login', json={'username': 'u1', 'password': 'pass'})
         headers = {'Authorization': f"Bearer {login_resp.json['access_token']}"}
         
-        req_data = {
-            'scope': {'type': 'group', 'groupId': g1.id},
+        query_params = {
+            'scope': 'group',
+            'groupId': g1.id,
             'timezone': 'Europe/London'
         }
-        resp = client.post('/getScores', json=req_data, headers=headers)
+        resp = client.get('/scores', query_string=query_params, headers=headers)
         
         assert resp.status_code == 200
         data = resp.json[0]['data']['2023-01-01']
@@ -105,9 +106,10 @@ def test_get_scores_group_not_member(client, db):
     login_resp = client.post('/login', json={'username': 'u2', 'password': 'pass'})
     headers = {'Authorization': f"Bearer {login_resp.json['access_token']}"}
     
-    req_data = {
-        'scope': {'type': 'group', 'groupId': g1.id},
+    query_params = {
+        'scope': 'group',
+        'groupId': g1.id,
         'timezone': 'Europe/London'
     }
-    resp = client.post('/getScores', json=req_data, headers=headers)
+    resp = client.get('/scores', query_string=query_params, headers=headers)
     assert resp.status_code == 403

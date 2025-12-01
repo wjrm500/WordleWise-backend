@@ -11,7 +11,7 @@ def auth_client(client, db):
 def test_get_users_personal(auth_client):
     client, headers, user = auth_client
     
-    resp = client.get('/getUsers?scope=personal', headers=headers)
+    resp = client.get('/users?scope=personal', headers=headers)
     
     assert resp.status_code == 200
     assert len(resp.json) == 1
@@ -28,7 +28,7 @@ def test_get_users_group(client, db):
     login_resp = client.post('/login', json={'username': 'u1', 'password': 'pass'})
     headers = {'Authorization': f"Bearer {login_resp.json['access_token']}"}
     
-    resp = client.get(f'/getUsers?scope=group&groupId={g1.id}', headers=headers)
+    resp = client.get(f'/users?scope=group&groupId={g1.id}', headers=headers)
     
     assert resp.status_code == 200
     assert len(resp.json) == 2
@@ -44,5 +44,5 @@ def test_get_users_group_not_member(client, db):
     login_resp = client.post('/login', json={'username': 'u2', 'password': 'pass'})
     headers = {'Authorization': f"Bearer {login_resp.json['access_token']}"}
     
-    resp = client.get(f'/getUsers?scope=group&groupId={g1.id}', headers=headers)
+    resp = client.get(f'/users?scope=group&groupId={g1.id}', headers=headers)
     assert resp.status_code == 403

@@ -26,7 +26,7 @@ def test_get_wordle_answer_success(auth_client):
         mock_get.return_value = mock_response
         
         today = datetime.date.today().strftime("%Y-%m-%d")
-        resp = client.post('/getWordleAnswer', json={'date': today}, headers=headers)
+        resp = client.get(f'/wordle/answer?date={today}', headers=headers)
         
         assert resp.status_code == 200
         assert resp.json['success'] == True
@@ -42,7 +42,7 @@ def test_get_wordle_answer_not_found(auth_client):
         mock_get.return_value = mock_response
         
         today = datetime.date.today().strftime("%Y-%m-%d")
-        resp = client.post('/getWordleAnswer', json={'date': today}, headers=headers)
+        resp = client.get(f'/wordle/answer?date={today}', headers=headers)
         
         assert resp.status_code == 200
         assert resp.json['success'] == False

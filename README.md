@@ -23,14 +23,14 @@ This is the backend for WordleWise, an app used by myself and my wife to keep tr
 - `PUT /user/default-scope`: Set user's default scope
 
 ### Scores
-- `POST /getScores`: Retrieve scores (supports personal and group scopes)
-- `POST /addScore`: Add or update a score
+- `GET /scores`: Retrieve scores (supports personal and group scopes)
+- `POST /scores`: Add or update a score
 
 ### Users
-- `GET /getUsers`: Get list of users
+- `GET /users`: Get list of users
 
 ### Wordle
-- `POST /getWordleAnswer`: Get the Wordle answer for a specific date
+- `GET /wordle/answer`: Get the Wordle answer for a specific date
 
 ## Database
 The app uses SQLite for data storage. The database schema includes:

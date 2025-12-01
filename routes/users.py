@@ -6,7 +6,7 @@ from utils.auth_helpers import get_current_user, require_group_member
 
 users_bp = Blueprint('users', __name__)
 
-@users_bp.route('/getUsers', methods=['GET'])
+@users_bp.route('/users', methods=['GET'])
 @jwt_required()
 def get_users():
     database = current_app.config['database']

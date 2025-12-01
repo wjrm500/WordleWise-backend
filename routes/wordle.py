@@ -7,11 +7,14 @@ from bs4 import BeautifulSoup
 
 wordle_bp = Blueprint('wordle', __name__)
 
-@wordle_bp.route('/getWordleAnswer', methods=['POST'])
+@wordle_bp.route('/wordle/answer', methods=['GET'])
 @jwt_required()
 def get_wordle_answer():
     try:
-        date_str = request.json['date']
+        date_str = request.args.get('date')
+        if not date_str:
+             return jsonify({'success': False, 'error': 'Date parameter is required'}), 400
+             
         date_obj = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
 
         formatted_date = f"{date_obj.day:02d}-{date_obj.month:02d}-{str(date_obj.year)[2:]}"
