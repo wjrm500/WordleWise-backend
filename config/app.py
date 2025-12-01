@@ -19,7 +19,7 @@ def create_app(test_config=None):
     
     if test_config:
         app.config.update(test_config)
-        
+
     JWTManager(app)
     CORS(app)
 
@@ -39,14 +39,12 @@ def create_app(test_config=None):
     from routes.users import users_bp
     from routes.groups import groups_bp
     from routes.wordle import wordle_bp
-    from routes.admin import admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(scores_bp)
     app.register_blueprint(users_bp)
     app.register_blueprint(groups_bp)
     app.register_blueprint(wordle_bp)
-    app.register_blueprint(admin_bp)
 
     # Store database instance in app config for route access
     app.config['database'] = database

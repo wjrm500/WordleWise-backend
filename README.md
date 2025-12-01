@@ -7,7 +7,6 @@ This is the backend for WordleWise, an app used by myself and my wife to keep tr
 - `/getScores`: retrieve weekly and daily score data
 - `/addScore`: add new scores
 - `/getUsers`: get user information
-- `/executeSql`: (admin only) run SQL commands on the database
 
 ## Database
 The app uses SQLite for data storage. The database schema includes:

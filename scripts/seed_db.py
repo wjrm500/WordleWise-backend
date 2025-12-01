@@ -1,9 +1,13 @@
+import sys
+import os
+
+# Add parent directory to path to allow imports from backend root
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from database.Database import Database
 from database.models import User, Score, Group, GroupMember
 from datetime import date, timedelta
 import random
-
-import os
 from dotenv import load_dotenv
 
 load_dotenv()

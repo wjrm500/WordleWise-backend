@@ -12,7 +12,7 @@ from database.models.Score import Score
 from database.models.User import User
 from database.models.Group import Group
 from database.models.GroupMember import GroupMember
-from utilities.invite_code import generate_invite_code
+from utils.invite_code import generate_invite_code
 
 
 class Database:
