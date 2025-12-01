@@ -3,16 +3,42 @@
 This is the backend for WordleWise, an app used by myself and my wife to keep track of our Wordle scores. It's built with Flask and provides an API for the React frontend.
 
 ## API endpoints
-- `/login`: authenticate users
-- `/getScores`: retrieve weekly and daily score data
-- `/addScore`: add new scores
-- `/getUsers`: get user information
+
+### Auth
+- `POST /login`: Authenticate user
+- `POST /register`: Register new user
+
+### Groups
+- `GET /groups`: List user's groups
+- `POST /groups`: Create a new group
+- `POST /groups/join`: Join a group via invite code
+- `GET /groups/<id>`: Get group details
+- `PUT /groups/<id>`: Update group details
+- `DELETE /groups/<id>`: Delete group
+- `POST /groups/<id>/leave`: Leave a group
+- `PUT /groups/<id>/members/<id>`: Update member role
+- `DELETE /groups/<id>/members/<id>`: Remove member
+- `POST /groups/<id>/regenerate-code`: Regenerate invite code
+- `GET /user/default-scope`: Get user's default scope
+- `PUT /user/default-scope`: Set user's default scope
+
+### Scores
+- `POST /getScores`: Retrieve scores (supports personal and group scopes)
+- `POST /addScore`: Add or update a score
+
+### Users
+- `GET /getUsers`: Get list of users
+
+### Wordle
+- `POST /getWordleAnswer`: Get the Wordle answer for a specific date
 
 ## Database
 The app uses SQLite for data storage. The database schema includes:
 
-- **User table**: stores user information
-- **Score table**: stores Wordle scores with date and user relationships
+- **User**: stores user information (username, forename, password hash, default group)
+- **Score**: stores Wordle scores linked to users
+- **Group**: stores group information (name, invite code, settings)
+- **GroupMember**: stores many-to-many relationship between users and groups, including roles
 
 The database file is stored in a volume on the server to persist data between container restarts.
 
