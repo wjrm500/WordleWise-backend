@@ -9,7 +9,7 @@ class Group(Base):
     __tablename__ = 'group'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), nullable=False)
+    name = Column(String(15), nullable=False)
     invite_code = Column(String(8), unique=True, nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     created_by_user_id = Column(Integer, ForeignKey('user.id'))

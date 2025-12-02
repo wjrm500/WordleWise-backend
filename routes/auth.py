@@ -30,6 +30,12 @@ def register():
     if not username or not password or not forename:
         return jsonify({'success': False, 'error': 'All fields are required'}), 400
 
+    if len(username) > 12:
+        return jsonify({'success': False, 'error': 'Username must be 12 characters or less'}), 400
+        
+    if len(forename) > 10:
+        return jsonify({'success': False, 'error': 'Display name must be 10 characters or less'}), 400
+
     try:
         user = database.register_user(username, password, forename)
         access_token = create_access_token(identity=username, expires_delta=datetime.timedelta(minutes=30))

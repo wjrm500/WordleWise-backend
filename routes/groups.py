@@ -39,6 +39,9 @@ def create_group():
         name = data.get('name')
         if not name:
             return jsonify({'error': 'Group name is required'}), 400
+            
+        if len(name) > 15:
+            return jsonify({'error': 'Group name must be 15 characters or less'}), 400
 
         include_historical = data.get('include_historical_data', True)
 
@@ -107,6 +110,8 @@ def update_group(group_id):
         data = request.json
         updates = {}
         if 'name' in data:
+            if len(data['name']) > 15:
+                return jsonify({'error': 'Group name must be 15 characters or less'}), 400
             updates['name'] = data['name']
         if 'include_historical_data' in data:
             updates['include_historical_data'] = 1 if data['include_historical_data'] else 0

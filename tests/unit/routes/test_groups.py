@@ -27,6 +27,34 @@ def test_create_group_missing_name(auth_client):
     assert resp.status_code == 400
     assert 'Group name is required' in resp.json['error']
 
+def test_create_group_name_limit(auth_client):
+    """Test that group creation fails if name is too long (>15 chars)"""
+    client, headers, _ = auth_client
+    response = client.post('/groups', json={
+        'name': 'a' * 16,
+        'include_historical_data': True
+    }, headers=headers)
+    assert response.status_code == 400
+    assert b'Group name must be 15 characters or less' in response.data
+
+def test_update_group_name_limit(auth_client):
+    """Test that group update fails if name is too long (>15 chars)"""
+    client, headers, _ = auth_client
+    # First create a valid group
+    create_response = client.post('/groups', json={
+        'name': 'Valid Group',
+        'include_historical_data': True
+    }, headers=headers)
+    assert create_response.status_code == 200
+    group_id = create_response.json['group']['id']
+
+    # Try to update with invalid name
+    response = client.put(f'/groups/{group_id}', json={
+        'name': 'a' * 16
+    }, headers=headers)
+    assert response.status_code == 400
+    assert b'Group name must be 15 characters or less' in response.data
+
 def test_get_groups(auth_client):
     client, headers, _ = auth_client
     

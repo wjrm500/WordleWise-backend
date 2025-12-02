@@ -57,12 +57,12 @@ def test_register_success(client, db):
 
 def test_register_duplicate_username(client, db):
     """Test registration with existing username."""
-    db.register_user("existing", "password", "Existing User")
+    db.register_user("existing", "password", "ExistUser")
     
     resp = client.post('/register', json={
         'username': 'existing',
         'password': 'password',
-        'forename': 'Another User'
+        'forename': 'Another'
     })
     
     assert resp.status_code == 400
@@ -77,3 +77,23 @@ def test_register_missing_fields(client):
     
     assert resp.status_code == 400
     assert resp.json['success'] == False
+
+def test_register_username_limit(client):
+    """Test that registration fails if username is too long (>12 chars)"""
+    response = client.post('/register', json={
+        'username': 'a' * 13,
+        'password': 'password123',
+        'forename': 'Test'
+    })
+    assert response.status_code == 400
+    assert b'Username must be 12 characters or less' in response.data
+
+def test_register_forename_limit(client):
+    """Test that registration fails if forename is too long (>10 chars)"""
+    response = client.post('/register', json={
+        'username': 'validuser',
+        'password': 'password123',
+        'forename': 'a' * 11
+    })
+    assert response.status_code == 400
+    assert b'Display name must be 10 characters or less' in response.data
