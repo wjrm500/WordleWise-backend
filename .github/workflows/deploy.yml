@@ -1,0 +1,14 @@
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    uses: wjrm500/github-workflows/.github/workflows/docker-deploy.yml@master
+    with:
+      docker_image_tag: wjrm500/wordlewise-backend:latest
+      docker_compose_project_name: wordlewise
+      docker_compose_file_path: /home/ServerConfig/wordlewise-docker-compose.yml
+    secrets: inherit
