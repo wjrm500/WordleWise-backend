@@ -97,3 +97,44 @@ def test_register_forename_limit(client):
     })
     assert response.status_code == 400
     assert b'Display name must be 10 characters or less' in response.data
+
+def test_login_rate_limiting(client, db):
+    """Test that login rate limiting works (5 attempts per minute)."""
+    db.register_user("testuser", "password", "Test User")
+
+    # Make 5 login attempts (should all succeed or fail based on credentials)
+    for i in range(5):
+        resp = client.post('/login', json={
+            'username': 'testuser',
+            'password': 'password'
+        })
+        assert resp.status_code == 200
+
+    # 6th attempt should be rate limited
+    resp = client.post('/login', json={
+        'username': 'testuser',
+        'password': 'password'
+    })
+    assert resp.status_code == 429
+    assert 'Retry-After' in resp.headers
+
+def test_register_rate_limiting(client):
+    """Test that registration rate limiting works (10 attempts per hour)."""
+    # Make 10 registration attempts
+    for i in range(10):
+        resp = client.post('/register', json={
+            'username': f'user{i}',
+            'password': 'password',
+            'forename': f'User{i}'
+        })
+        # Should succeed (200) or fail with validation error (400)
+        assert resp.status_code in [200, 400]
+
+    # 11th attempt should be rate limited
+    resp = client.post('/register', json={
+        'username': 'user11',
+        'password': 'password',
+        'forename': 'User11'
+    })
+    assert resp.status_code == 429
+    assert 'Retry-After' in resp.headers

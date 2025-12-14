@@ -5,6 +5,7 @@ from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 
 from database.Database import Database
+from config.limiter import limiter
 
 load_dotenv()
 
@@ -28,6 +29,9 @@ def create_app(test_config=None):
         'http://localhost:3000'             # Development frontend
     ]
     CORS(app, origins=allowed_origins)
+
+    # Initialize rate limiter
+    limiter.init_app(app)
 
     database = Database(database_url=app.config['DATABASE_URL'])
 
