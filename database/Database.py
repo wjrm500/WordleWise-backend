@@ -44,11 +44,7 @@ class Database:
         Base.metadata.create_all(self.engine, checkfirst=True)
         self.session: Session = scoped_session(sessionmaker(bind=self.engine))
         self.timezone = None
-    
-    def execute(self, sql) -> None:
-        self.session.execute(text(sql))
-        self.session.commit()
-    
+
     def set_timezone(self, timezone) -> None:
         if timezone not in pytz.all_timezones:
             raise Exception('Invalid timezone')
