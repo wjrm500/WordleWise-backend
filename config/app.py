@@ -21,7 +21,13 @@ def create_app(test_config=None):
         app.config.update(test_config)
 
     JWTManager(app)
-    CORS(app)
+
+    # Configure CORS to only allow requests from legitimate frontend domains
+    allowed_origins = [
+        'https://wordlewise.wjrm500.com',  # Production frontend
+        'http://localhost:3000'             # Development frontend
+    ]
+    CORS(app, origins=allowed_origins)
 
     database = Database(database_url=app.config['DATABASE_URL'])
 
