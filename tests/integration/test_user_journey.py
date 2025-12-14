@@ -31,7 +31,7 @@ def test_journey_new(client, db):
         headers1 = {'Authorization': f'Bearer {token1}'}
         
         # 3. Create Group
-        resp = client.post('/groups', json={'name': 'Integration Group'}, headers=headers1)
+        resp = client.post('/groups', json={'name': 'Test Group'}, headers=headers1)
         assert resp.status_code == 200
         group_id = resp.json['group']['id']
         invite_code = resp.json['group']['invite_code']
