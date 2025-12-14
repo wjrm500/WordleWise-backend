@@ -138,3 +138,36 @@ def test_register_rate_limiting(client):
     })
     assert resp.status_code == 429
     assert 'Retry-After' in resp.headers
+
+def test_register_password_too_short(client):
+    """Test that registration fails if password is less than 8 characters"""
+    response = client.post('/register', json={
+        'username': 'validuser',
+        'password': 'short',
+        'forename': 'Test'
+    })
+    assert response.status_code == 400
+    assert response.json['success'] == False
+    assert response.json['error'] == 'Password must be at least 8 characters long'
+
+def test_register_password_exactly_8_chars(client, db):
+    """Test that registration succeeds with password exactly 8 characters"""
+    response = client.post('/register', json={
+        'username': 'validuser',
+        'password': '12345678',
+        'forename': 'Test'
+    })
+    assert response.status_code == 200
+    assert response.json['success'] == True
+    assert response.json['user']['username'] == 'validuser'
+
+def test_register_password_longer_than_8_chars(client, db):
+    """Test that registration succeeds with password longer than 8 characters"""
+    response = client.post('/register', json={
+        'username': 'validuser',
+        'password': 'verylongpassword123',
+        'forename': 'Test'
+    })
+    assert response.status_code == 200
+    assert response.json['success'] == True
+    assert response.json['user']['username'] == 'validuser'
