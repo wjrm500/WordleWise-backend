@@ -67,8 +67,17 @@ The application uses the following environment variables:
 - `DATABASE_URL`: Connection string for the database (default: `sqlite:///wordlewise.db`)
 - `JWT_SECRET_KEY`: Secret key for signing JWT tokens (required)
 - `FLASK_ENV`: The environment the app is running in.
-    - `development`: Enables debug mode and allows easier database seeding.
-    - `production`: Disables debug mode and enforces safety checks for destructive operations (like seeding). Default if not set.
+    - `development`: Enables debug mode, allows easier database seeding, and returns detailed error messages to API clients for debugging.
+    - `production`: Disables debug mode, enforces safety checks for destructive operations (like seeding), and returns generic error messages to API clients to prevent information disclosure. Default if not set.
+
+## Error Handling
+The API implements secure error handling to protect against information disclosure vulnerabilities:
+
+- **Production mode** (`FLASK_ENV=production`): Server errors (5xx) return generic messages like "An unexpected error occurred" to prevent exposing internal implementation details. Client errors (4xx) return specific error messages since they're user-facing.
+- **Development mode** (`FLASK_ENV=development`): All errors return detailed error messages including exception types to aid debugging.
+- All errors are logged server-side with full details regardless of environment for debugging purposes.
+
+This prevents leaking sensitive information such as database schema details, stack traces, or internal implementation details to potential attackers.
 
 ## Deploying the app
 This app is currently deployed as a Docker container on a DigitalOcean Droplet, alongside various other containerised apps. These containerised apps are managed through the [ServerConfig](https://github.com/wjrm500/ServerConfig) repository, which includes a variety of Docker Compose configurations that reference Docker images stored on Docker Hub. Thus, to deploy any new code changes, we need to (A) build the image locally, (B) push the image up to Docker Hub, (C) SSH into the Droplet, (D) pull the image, and (E) restart the container.

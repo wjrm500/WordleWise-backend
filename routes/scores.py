@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required
 from http import HTTPStatus
 
 from utils.auth_helpers import get_current_user, require_group_member
+from utils.error_handler import handle_error
 
 scores_bp = Blueprint('scores', __name__)
 
@@ -31,10 +32,7 @@ def get_scores():
         all_weeks = database.get_scores(user.id, scope_type, group_id)
         return jsonify(all_weeks)
     except Exception as e:
-        print(e)
-        if hasattr(e, 'code'):
-            return jsonify({'error': str(e)}), e.code
-        return jsonify(str(e)), HTTPStatus.INTERNAL_SERVER_ERROR
+        return handle_error(e)
 
 @scores_bp.route('/scores', methods=['POST'])
 @jwt_required()
@@ -55,5 +53,4 @@ def add_score():
         resp.headers.add('Access-Control-Allow-Origin', '*')
         return resp
     except Exception as e:
-        print(e)
-        return jsonify(str(e)), HTTPStatus.INTERNAL_SERVER_ERROR
+        return handle_error(e)
