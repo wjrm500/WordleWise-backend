@@ -2,11 +2,13 @@ import datetime
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import create_access_token
 
+from config.limiter import limiter
 from utils.serializers import serialise_user
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['POST'])
+@limiter.limit("5 per minute")
 def login():
     database = current_app.config['database']
     data = request.json
@@ -20,6 +22,7 @@ def login():
         return jsonify({'success': False, 'error': str(e), 'access_token': None, 'user': None})
 
 @auth_bp.route('/register', methods=['POST'])
+@limiter.limit("10 per hour")
 def register():
     database = current_app.config['database']
     data = request.json
