@@ -1,7 +1,9 @@
 from collections import defaultdict
 import datetime
 import hashlib
+import re
 from typing import List
+import bcrypt
 import pytz
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker, scoped_session
@@ -59,16 +61,32 @@ class Database:
         user = self.session.query(User).filter_by(username=username).first()
         if user is not None:
             hash_to_match = user.password_hash
-            if hashlib.md5(password.encode()).hexdigest() == hash_to_match:
-                return user
-            raise Exception('Password incorrect')
+
+            # Check if this is a legacy MD5 hash (32 hex characters)
+            is_md5_hash = re.match(r'^[a-f0-9]{32}$', hash_to_match)
+
+            if is_md5_hash:
+                # Legacy MD5 verification
+                if hashlib.md5(password.encode()).hexdigest() == hash_to_match:
+                    # Password is correct - migrate to bcrypt
+                    new_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                    user.password_hash = new_hash
+                    self.session.commit()
+                    return user
+                raise Exception('Password incorrect')
+            else:
+                # Modern bcrypt verification
+                if bcrypt.checkpw(password.encode('utf-8'), hash_to_match.encode('utf-8')):
+                    return user
+                raise Exception('Password incorrect')
         raise Exception('User does not exist')
 
     def register_user(self, username, password, forename):
         if self.session.query(User).filter_by(username=username).first():
             raise Exception("Username already exists")
-            
-        password_hash = hashlib.md5(password.encode()).hexdigest()
+
+        # Use bcrypt for secure password hashing
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         new_user = User(username=username, password_hash=password_hash, forename=forename)
         self.session.add(new_user)
         self.session.commit()
