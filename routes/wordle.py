@@ -5,6 +5,8 @@ from flask_jwt_extended import jwt_required
 import requests
 from bs4 import BeautifulSoup
 
+from utils.error_handler import handle_success_error_response
+
 wordle_bp = Blueprint('wordle', __name__)
 
 @wordle_bp.route('/wordle/answer', methods=['GET'])
@@ -49,7 +51,4 @@ def get_wordle_answer():
         })
 
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        })
+        return handle_success_error_response(e, success_key=False)

@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required
 from http import HTTPStatus
 
 from utils.auth_helpers import get_current_user, require_group_member
+from utils.error_handler import handle_error
 
 users_bp = Blueprint('users', __name__)
 
@@ -26,7 +27,4 @@ def get_users():
         users = database.get_users(user.id, scope_type, group_id)
         return jsonify([{"id": u.id, "username": u.username, "forename": u.forename} for u in users])
     except Exception as e:
-        print(e)
-        if hasattr(e, 'code'):
-            return jsonify({'error': str(e)}), e.code
-        return jsonify(str(e)), HTTPStatus.INTERNAL_SERVER_ERROR
+        return handle_error(e)

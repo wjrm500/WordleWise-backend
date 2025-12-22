@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required
 
 from utils.auth_helpers import get_current_user, require_group_member, require_group_admin
+from utils.error_handler import handle_error, handle_success_error_response
 
 groups_bp = Blueprint('groups', __name__)
 
@@ -27,7 +28,7 @@ def get_groups():
             })
         return jsonify(result)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return handle_error(e)
 
 @groups_bp.route('/groups', methods=['POST'])
 @jwt_required()
@@ -64,7 +65,7 @@ def create_group():
             }
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return handle_error(e)
 
 @groups_bp.route('/groups/<int:group_id>', methods=['GET'])
 @jwt_required()
@@ -95,9 +96,7 @@ def get_group_details(group_id):
             "current_user_role": membership.role
         })
     except Exception as e:
-        if hasattr(e, 'code'):
-            return jsonify({'error': str(e)}), e.code
-        return jsonify({'error': str(e)}), 500
+        return handle_error(e)
 
 @groups_bp.route('/groups/<int:group_id>', methods=['PUT'])
 @jwt_required()
@@ -121,9 +120,7 @@ def update_group(group_id):
 
         return jsonify({"success": True})
     except Exception as e:
-        if hasattr(e, 'code'):
-            return jsonify({'error': str(e)}), e.code
-        return jsonify({'error': str(e)}), 500
+        return handle_success_error_response(e)
 
 @groups_bp.route('/groups/<int:group_id>', methods=['DELETE'])
 @jwt_required()
@@ -137,9 +134,7 @@ def delete_group(group_id):
 
         return jsonify({"success": True})
     except Exception as e:
-        if hasattr(e, 'code'):
-            return jsonify({'error': str(e)}), e.code
-        return jsonify({'error': str(e)}), 500
+        return handle_success_error_response(e)
 
 @groups_bp.route('/groups/join', methods=['POST'])
 @jwt_required()
@@ -169,7 +164,7 @@ def join_group():
             }
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return handle_error(e)
 
 @groups_bp.route('/groups/<int:group_id>/leave', methods=['POST'])
 @jwt_required()
@@ -184,7 +179,7 @@ def leave_group(group_id):
 
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return handle_success_error_response(e)
 
 @groups_bp.route('/groups/<int:group_id>/members/<int:member_id>', methods=['DELETE'])
 @jwt_required()
@@ -204,9 +199,7 @@ def remove_member(group_id, member_id):
         database.remove_member(group_id, member_id)
         return jsonify({"success": True})
     except Exception as e:
-        if hasattr(e, 'code'):
-            return jsonify({'error': str(e)}), e.code
-        return jsonify({'error': str(e)}), 500
+        return handle_success_error_response(e)
 
 @groups_bp.route('/groups/<int:group_id>/members/<int:member_id>', methods=['PUT'])
 @jwt_required()
@@ -233,9 +226,7 @@ def update_member_role(group_id, member_id):
         database.update_member_role(group_id, member_id, role)
         return jsonify({"success": True})
     except Exception as e:
-        if hasattr(e, 'code'):
-            return jsonify({'error': str(e)}), e.code
-        return jsonify({'error': str(e)}), 500
+        return handle_success_error_response(e)
 
 @groups_bp.route('/groups/<int:group_id>/regenerate-code', methods=['POST'])
 @jwt_required()
@@ -248,9 +239,7 @@ def regenerate_invite_code(group_id):
         new_code = database.regenerate_invite_code(group_id)
         return jsonify({"success": True, "invite_code": new_code})
     except Exception as e:
-        if hasattr(e, 'code'):
-            return jsonify({'error': str(e)}), e.code
-        return jsonify({'error': str(e)}), 500
+        return handle_success_error_response(e)
 
 @groups_bp.route('/user/default-scope', methods=['PUT'])
 @jwt_required()
@@ -279,7 +268,7 @@ def set_default_scope():
         else:
             return jsonify({"success": False, "error": "Failed to update default scope"}), 500
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return handle_error(e)
 
 @groups_bp.route('/user/default-scope', methods=['GET'])
 @jwt_required()
@@ -298,4 +287,4 @@ def get_default_scope():
                 "groupId": None
             })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return handle_error(e)

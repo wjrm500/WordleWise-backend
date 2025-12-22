@@ -4,6 +4,7 @@ from flask_jwt_extended import create_access_token
 
 from config.limiter import limiter
 from utils.serializers import serialise_user
+from utils.error_handler import handle_success_error_response
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -19,7 +20,12 @@ def login():
         access_token = create_access_token(identity=username, expires_delta=datetime.timedelta(minutes=30))
         return jsonify({'success': True, 'error': None, 'access_token': access_token, 'user': serialise_user(user)})
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e), 'access_token': None, 'user': None})
+        response, status_code = handle_success_error_response(e)
+        # Add access_token and user fields for consistency with success response
+        response_data = response.get_json()
+        response_data['access_token'] = None
+        response_data['user'] = None
+        return jsonify(response_data), status_code
 
 @auth_bp.route('/register', methods=['POST'])
 @limiter.limit("10 per hour")
@@ -47,4 +53,4 @@ def register():
         access_token = create_access_token(identity=username, expires_delta=datetime.timedelta(minutes=30))
         return jsonify({'success': True, 'error': None, 'access_token': access_token, 'user': serialise_user(user)})
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 400
+        return handle_success_error_response(e)
