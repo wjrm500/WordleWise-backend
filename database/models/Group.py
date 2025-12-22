@@ -7,6 +7,7 @@ from database.models.base import Base
 
 class Group(Base):
     __tablename__ = 'group'
+    __table_args__ = {'sqlite_autoincrement': True}
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(15), nullable=False)
